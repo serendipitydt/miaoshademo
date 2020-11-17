@@ -5,4 +5,5 @@
 - 优化GoodsController,将其逻辑结构转移到UerArgumentResolver里面，新增config包。
 - 以后获取session的方法改变了，只需要在UerArgumentResolver这个方法里面做调整即可，不需要动GoodsController这些业务逻辑
 - 延长了token的有效期,修改了不再每次生成新的token，一次生成，然后作为参数传入，不断更新。
+
 ##第二章已完成
