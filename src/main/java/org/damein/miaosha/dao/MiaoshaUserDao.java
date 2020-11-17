@@ -7,6 +7,6 @@ import org.damein.miaosha.domain.MiaoshaUser;
 
 @Mapper
 public interface MiaoshaUserDao {
-    @Select("select * from miaosha_user where id=#{id}")
-    public MiaoshaUser getById(@Param("id") long id);
+    @Select("select * from miaosha_user_cloud where id=#{id}")
+    MiaoshaUser getById(@Param("id") long id);
 }
