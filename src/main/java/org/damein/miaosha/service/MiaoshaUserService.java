@@ -30,7 +30,40 @@ public class MiaoshaUserService {
     RedisService redisService;
 
     public MiaoshaUser getById(long id) {
-        return miaoshaUserDao.getById(id);
+        //取缓存
+        MiaoshaUser user= redisService.get(MiaoshaUserKey.getById,""+id,MiaoshaUser.class);
+        if(user!=null){
+            return user;
+        }
+        //缓存没有的话 查数据库
+        user=miaoshaUserDao.getById(id);
+        //数据库有的话，存入缓存
+        if(user!=null){
+            redisService.set(MiaoshaUserKey.getById,""+id,user);
+        }
+        return user;
+    }
+
+    public boolean updatePassword(String token,long id,String formpass){
+        //取user
+        MiaoshaUser user=getById(id);
+        if(user==null){
+            throw new GlobalException(CodeMsg.MOBILE_NOT_EXIST);
+        }
+        //为什么要新产生对象去更新而不直接更新user呢？因为更新会产生很多sql，deailog，会影响效率，所以生成一个新的对象
+        //所以修改哪个字段就更新哪个字段
+
+        //更新数据库
+        MiaoshaUser toBeUpdate=new MiaoshaUser();
+        toBeUpdate.setId(id);
+        toBeUpdate.setPassword(MD5Util.fromPassToDBPass(formpass,user.getSalt()));
+        miaoshaUserDao.update(toBeUpdate);
+        //处理缓存，因为user变了
+        redisService.delete(MiaoshaUserKey.getById,""+id);
+        //token不能删，删了就不能登陆了，更新即可
+        user.setPassword(toBeUpdate.getPassword());
+        redisService.set(MiaoshaUserKey.token,token,user);
+        return true;
     }
 
     //登录时出现了异常的话直接往外抛
